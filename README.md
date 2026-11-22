@@ -17,8 +17,8 @@ gut empfängt**. Gedacht fürs Tablet oder Smartphone unterwegs. Die Daten diene
   Downlink-RSSI, Uplink-SNR und „kein Empfang“ bei Funklöchern.
 * **Manuelle Erfassung** ohne Funkgerät.
 * Messaufbau (zu Fuß / Fahrzeug / Außenantenne) und Antennenhöhe je Messpunkt.
-* Alles bleibt **lokal auf dem Gerät** (IndexedDB) und ist offline nutzbar. Export als **CSV** (für
-  den Simulator) oder JSON.
+* Alles bleibt **lokal auf dem Gerät** (IndexedDB) und ist offline nutzbar. Export als **CSV** oder
+  **JSON**; beides im Simulator einfach in den Reiter „Kalibrierung“ ziehen.
 
 ## Voraussetzungen
 
