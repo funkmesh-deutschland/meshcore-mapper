@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Funkmesh Mapper</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="style.css?v=2">
+</head>
+<body>
+<header class="top">
+  <img src="logo-hell.svg" alt="Funkmesh" class="logo">
+  <div class="ttl"><b>Mapper</b><span>Empfang erfassen</span></div>
+  <div class="pills">
+    <span class="pill" id="p-ble">Funk: getrennt</span>
+    <span class="pill" id="p-gps">GPS: –</span>
+    <span class="pill" id="p-rec">Pause</span>
+  </div>
+</header>
+
+<main class="grid">
+  <section class="col">
+    <div class="card">
+      <div class="row gap">
+        <button class="btn primary" id="b-ble">Companion verbinden (Bluetooth)</button>
+        <button class="btn" id="b-usb" hidden>USB</button>
+        <button class="btn" id="b-disc" hidden>Trennen</button>
+      </div>
+      <div class="hint" id="dev-info">Benötigt Chrome/Edge auf Android, Windows, Linux oder macOS (iPad: Browser „Bluefy“). Ohne Funkgerät: manuelle Erfassung unten.</div>
+      <div class="row gap big-row">
+        <button class="btn rec" id="b-rec">● Aufnahme starten</button>
+      </div>
+      <div class="stats">
+        <div><b id="s-rows">0</b><span>Messpunkte</span></div>
+        <div><b id="s-reps">0</b><span>Repeater gehört</span></div>
+        <div><b id="s-last">–</b><span>letzter Pegel</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Messaufbau</h3>
+      <div class="form">
+        <label>Aufbau<select id="o-setup">
+          <option value="fuss">zu Fuß, Gerät am Körper</option>
+          <option value="fahrzeug_innen">Fahrzeug, Gerät innen</option>
+          <option value="aussenantenne">Fahrzeug/Stativ, Außenantenne</option></select></label>
+        <label>Antennenhöhe über Grund [m]<input type="number" id="o-height" value="1.5" step="0.1"></label>
+        <label>Max. GPS-Ungenauigkeit [m]<input type="number" id="o-acc" value="25" step="5"></label>
+        <label class="chk"><input type="checkbox" id="o-wake" checked> Bildschirm anlassen</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Aktiv-Test (Trace)</h3>
+      <div class="hint">Sendet in festen Abständen einen Trace an die gewählten Repeater (1 Hop, kein Flooding). Antwort = Downlink-Pegel + Uplink-SNR am Repeater, keine Antwort = „nicht empfangen“.</div>
+      <div class="row gap"><label class="chk"><input type="checkbox" id="t-on"> aktiv</label>
+        <label>alle <input type="number" id="t-int" value="30" min="10" step="5" style="width:5em"> s</label>
+        <button class="btn small" id="t-load">Repeater aus Kontakten laden</button></div>
+      <div id="t-list" class="list"></div>
+    </div>
+
+    <div class="card">
+      <h3>Manuell erfassen</h3>
+      <div class="form two">
+        <label>Repeater (Name oder Hash)<input id="m-rep" list="rep-names" placeholder="z. B. BIL-01 oder 76"></label>
+        <label>RSSI [dBm]<input type="number" id="m-rssi" step="1" placeholder="-105"></label>
+        <label>SNR [dB] (optional)<input type="number" id="m-snr" step="0.25"></label>
+      </div>
+      <datalist id="rep-names"></datalist>
+      <div class="row gap"><button class="btn" id="m-add">Empfang speichern</button><button class="btn danger" id="m-none">Kein Empfang hier</button></div>
+    </div>
+  </section>
+
+  <section class="col">
+    <div class="card map-card"><div id="map"></div></div>
+    <div class="card">
+      <div class="row between"><h3>Letzte Pakete</h3><span class="hint" id="sess-name"></span></div>
+      <table class="log"><thead><tr><th>Zeit</th><th>Repeater</th><th class="n">RSSI</th><th class="n">SNR</th><th>Art</th><th class="n">GPS ±</th></tr></thead><tbody id="log"></tbody></table>
+    </div>
+    <div class="card">
+      <h3>Daten</h3>
+      <div class="row gap">
+        <button class="btn primary" id="b-csv">CSV exportieren</button>
+        <button class="btn" id="b-json">JSON (Rohdaten)</button>
+        <button class="btn" id="b-new">Neue Sitzung</button>
+        <button class="btn danger" id="b-clear">Alles löschen</button>
+      </div>
+      <div class="hint">Die CSV direkt im Simulator unter „Kalibrierung → Messdatei“ hochladen. Daten bleiben nur auf diesem Gerät, bis du sie exportierst.</div>
+      <div id="sessions" class="list"></div>
+    </div>
+  </section>
+</main>
+<div id="toast" hidden></div>
+<script src="vendor/leaflet/leaflet.js"></script>
+<script type="module" src="app.js?v=2"></script>
+</body>
+</html>
