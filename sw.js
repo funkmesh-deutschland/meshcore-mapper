@@ -1,6 +1,6 @@
 /* Service Worker: App-Shell offline verfügbar machen. Kartenkacheln kommen aus dem Netz. */
-const CACHE = 'fm-mapper-v3';
-const SHELL = ['./', 'index.html', 'app.js?v=2', 'style.css?v=2', 'manifest.webmanifest', 'logo-hell.svg',
+const CACHE = 'fm-mapper-v4';
+const SHELL = ['./', 'index.html', 'app.js?v=3', 'style.css?v=3', 'manifest.webmanifest', 'logo-hell.svg',
   'icons/icon-192.png', 'icons/icon-512.png', 'vendor/leaflet/leaflet.js', 'vendor/leaflet/leaflet.css',
   'vendor/meshcore/connection/connection.js', 'vendor/meshcore/connection/web_ble_connection.js',
   'vendor/meshcore/connection/web_serial_connection.js', 'vendor/meshcore/connection/serial_connection.js',

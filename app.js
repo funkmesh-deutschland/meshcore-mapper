@@ -316,10 +316,59 @@ async function allRows(sessionId = null) {
   const s = tx('rows');
   return sessionId === null ? req(s.getAll()) : req(s.index('session').getAll(sessionId));
 }
-function download(name, text, type) {
+// iPhone/iPad: <a download> mit Blob-URL funktioniert dort nicht zuverlässig (als Home-Bildschirm-App gar nicht,
+// in Bluetooth-Browsern wie Bluefy ebenso wenig). Dort über das Teilen-Menü („In Dateien sichern“) exportieren.
+const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function shareFile(name, text, type) {
+  if (!navigator.share || !navigator.canShare) return null;
+  for (const t of [type, 'text/plain']) {
+    const f = new File([text], name, { type: t });
+    if (navigator.canShare({ files: [f] })) return f;
+  }
+  return null;
+}
+async function download(name, text, type) {
+  if (IOS) {
+    const f = shareFile(name, text, type);
+    if (f) {
+      try { await navigator.share({ files: [f], title: name }); return; }
+      catch (e) { if (e.name === 'AbortError') return; }   // NotAllowedError: Geste durch async verbraucht → Dialog
+    }
+    return exportDialog(name, text, type);
+  }
+  saveLink(name, text, type);
+}
+function saveLink(name, text, type) {
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+}
+function exportDialog(name, text, type) {
+  const f = shareFile(name, text, type);
+  const d = document.createElement('div'); d.className = 'modal';
+  d.innerHTML = `<div class="card"><h3>Export: ${esc(name)}</h3>
+    <div class="hint">${(text.length / 1024).toFixed(1)} kB. ${f ? '„Teilen“ antippen und „In Dateien sichern“ wählen.' : 'Falls „Herunterladen“ hier nichts tut: Inhalt kopieren und z. B. in der Dateien- oder Notizen-App als .csv sichern.'}</div>
+    <div class="row gap">
+      ${f ? '<button class="btn primary" data-a="share">Teilen / Sichern</button>' : ''}
+      <button class="btn" data-a="dl">Herunterladen</button>
+      <button class="btn${f ? '' : ' primary'}" data-a="copy">Kopieren</button>
+      <button class="btn" data-a="open">Anzeigen</button>
+      <button class="btn" data-a="close">Schließen</button>
+    </div><textarea readonly hidden></textarea></div>`;
+  d.querySelector('textarea').value = text;
+  document.body.appendChild(d);
+  const close = () => d.remove();
+  d.onclick = async (e) => {
+    const a = e.target.dataset && e.target.dataset.a;
+    if (e.target === d || a === 'close') return close();
+    try {
+      if (a === 'share') { await navigator.share({ files: [f], title: name }); close(); }
+      if (a === 'dl') saveLink(name, text, type);
+      if (a === 'copy') { await navigator.clipboard.writeText(text); toast('In die Zwischenablage kopiert'); }
+      if (a === 'open') { const t = d.querySelector('textarea'); t.hidden = false; t.focus(); t.select(); }
+    } catch (err) { if (err.name !== 'AbortError') toast('Export: ' + err.message, 5000); }
+  };
 }
 function toCsv(rows) {
   const q = (v) => { if (v === null || v === undefined) return ''; const s = String(v); return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
